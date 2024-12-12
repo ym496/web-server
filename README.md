@@ -6,10 +6,12 @@ This is a lightweight HTTP server built from scratch using Java. It supports HTT
 <div align="center">
 <img src="https://i.imgur.com/GfdiNUL.png" alt="web server demo" width="600" /> </centre>
 </div>
+
 * http method POST example
 <div align="center">
 <img src="https://i.imgur.com/UBxRx3v.png" alt="web server demo" width="600" /> </centre>
 </div>
+
 ## Installation
 
 1. Clone this repo:

@@ -1,5 +1,5 @@
 # minimal http server in java
-This is a lightweight HTTP server built from scratch using Java. It supports HTTP methods and serves files from a specified directory. I created this to understand how HTTP servers work.
+This is a lightweight multi-threaded HTTP server built from scratch using Java. It can handle GET, POST, and other HTTP requests asynchronously. It supports HTTP methods and serves files from a specified directory. It can process multiple requests at the same time by leveraging Java’s threading mechanism. I created this to understand how HTTP servers work.
 
 ## demo
 * serves files with different MIME type from a specified dir

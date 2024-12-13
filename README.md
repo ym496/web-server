@@ -12,6 +12,7 @@ This is a lightweight multi-threaded HTTP server built from scratch using Java. 
 <img src="https://i.imgur.com/UBxRx3v.png" alt="web server demo" width="600" /> </centre>
 </div>
 
+*  this server uses Java threads to handle client requests concurrently. Each client request is processed in its own thread, ensuring non-blocking, simultaneous processing of multiple requests.
 ## Installation
 
 1. Clone this repo:

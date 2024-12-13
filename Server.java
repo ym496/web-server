@@ -1,13 +1,15 @@
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Server {
   private static BufferedWriter writer;
   private static BufferedReader reader;
   private static String basedir = "./serve/"; 
 
-  private static void parse(String line) {
+  private static void parse(BufferedReader reader, BufferedWriter writer, String line) {
     try {
       if (line.startsWith("GET")){
         String[] l = line.split(" ");
@@ -16,18 +18,20 @@ public class Server {
         if (!file.exists()){
           writer.write("HTTP/1.1 404 Not Found");
           writer.newLine();
-          writer.write("Content-Type: " + getMimeType(path));
+          writer.write("Content-Type: text/html");
           writer.newLine();
           writer.newLine();
           writer.write("<h1>404 Not Found</h1>");
           writer.flush();
         }else{
-          serve(path);
+          serve(writer,path);
         }
         System.out.println(path);
       }
       if (line.startsWith("POST")){
         int contentLength = 0;
+        // Similar to GET, the path could verified too!! 
+        // i'm not doing it tho.
         while ((line = reader.readLine()) != null && !line.isEmpty()) {
           if (line.startsWith("Content-Length")) {
             contentLength = Integer.parseInt(line.split(" ")[1]);
@@ -69,7 +73,7 @@ public class Server {
       if (filePath.endsWith(".svg")) return "image/svg+xml";
       return "text/html";
   }
-  private static void serve(String path){
+  private static void serve(BufferedWriter writer,String path){
     try {
       writer.write("HTTP/1.1 200 OK");
       writer.newLine();
@@ -94,23 +98,33 @@ public class Server {
    try {
      ServerSocket serverSocket = new ServerSocket(1234);
      System.out.println("Server listening");
+     ExecutorService threadPool = Executors.newFixedThreadPool(10);
      while (true){
          Socket connectionSocket = serverSocket.accept();
          System.out.println("Client connected.");
-         reader = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
-         writer = new BufferedWriter(new OutputStreamWriter(connectionSocket.getOutputStream()));
-         connectionSocket.setKeepAlive(true);
-         String line;
-         while ((line = reader.readLine()) != null && !line.isEmpty()) {
-           parse(line);
-           System.out.println(line);
-         }
-          reader.close();
-          writer.close();
-          connectionSocket.close();
+         threadPool.submit(() -> handleConnection(connectionSocket));
      }
    } catch (IOException e) {
      System.err.println("Error occurred: " + e.getMessage());
    }
  }
+  private static void handleConnection(Socket connectionSocket) {
+    try (BufferedReader reader = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(connectionSocket.getOutputStream()))) {
+
+      String line;
+      while ((line = reader.readLine()) != null && !line.isEmpty()) {
+        parse(reader, writer, line);
+        System.out.println(line);
+      }
+    } catch (IOException e) {
+      System.err.println("Error occurred while handling client: " + e.getMessage());
+    } finally {
+      try {
+        connectionSocket.close();
+      } catch (IOException e) {
+        System.err.println("Error closing client socket: " + e.getMessage());
+      }
+    }
+  }
 }
